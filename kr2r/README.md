@@ -1,7 +1,12 @@
-# Kun-peng <img src="./docs/KunPeng.png" align="right" width="140"/>
+# Note
+The original author refused to merge my pull request to fix error for compiling on MacOS (reqwest crate) and benchmark with original kraken2 using real-world datasets (https://github.com/eric9n/Kun-peng/pull/28). I found that this implementation is less accurate than original Kraken2 for many banchmarks. Therefore, I added benchmark results using real-world datasets. Also, I cleaned many non-English annotation/documentation. I also use the improved HyperLogLog estimator invented in Ertl 2017 paper (https://arxiv.org/abs/1702.01284) to determine hash table size. 
+
+Credit to original author: https://github.com/eric9n/Kun-peng. Below are updated README with benchmark results in the end. 
+
+
+# Kun-peng <img src="./kr2r//docs/KunPeng.png" align="right" width="140"/>
 
 [![](https://img.shields.io/badge/doi-waiting-yellow.svg)]() [![](https://img.shields.io/badge/release%20version-0.6.10-green.svg)](https://github.com/eric9n/Kun-peng/releases)
-
 
 We developed Kun-peng, an accurate and highly scalable low-memory tool for classifying metagenomic sequences.
 
@@ -11,13 +16,15 @@ Importantly, the flexible structure of the reference index also allows the const
 
 The name "Kun-peng" is a massive mythical creature capable of transforming from a giant fish in the water (Kun) to a giant bird in the sky (Peng) from Chinese mythology, reflecting the flexible nature and capacity of the software to efficiently navigate the vast and complex landscapes of metagenomic data.
 
+![Workflow of Kun-peng](./kr2r/docs/Picture1.png)
+
 ## Get Started
 
 Follow these steps to install Kun-peng and run the examples.
 
 ### Method 1: Download Pre-built Binaries (Recommended)
 
-If you prefer not to build from source, you can download the pre-built binaries for your platform from the GitHub [releases page](https://github.com/eric9n/kraken2-rust/releases).
+If you prefer not to build from source, you can download the pre-built binaries for your platform from the GitHub [releases page](https://github.com/eric9n/Kun-peng/releases).
 
 ``` bash
 mkdir kun_peng_v0.6.10
@@ -34,7 +41,7 @@ We will use a very small virus database on the GitHub homepage as an example:
 1.  download database
 
 ``` sh
-git clone https://github.com/eric9n/kun_peng.git
+git clone https://github.com/eric9n/Kun-peng.git
 cd kun_peng
 ```
 
@@ -88,7 +95,7 @@ Classify took: 92.519365ms
 First, clone this repository to your local machine:
 
 ``` sh
-git clone https://github.com/eric9n/kun_peng.git
+git clone https://github.com/eric9n/Kun-peng.git
 cd kun_peng
 ```
 
@@ -123,6 +130,55 @@ kun_peng direct error: [any direct errors here]
 ```
 
 This output confirms that the `kun_peng` commands were executed successfully and the files were processed as expected.
+
+## ncbi tool
+
+
+#### Run the `ncbi` Example
+
+Run the example script in the ncbi project to download the necessary files. Execute the following command from the root of the workspace:
+
+``` sh
+cargo run --release --example run_download --package ncbi
+```
+
+This will run the run_download.rs example located in the ncbi project's examples directory. The script will:
+
+1.  Ensure the necessary directories exist.
+2.  Download the required files using the ncbi binary with the following commands:
+
+-   ./target/release/ncbi -d downloads gen -g archaea
+-   ./target/release/ncbi -d downloads tax
+
+Example Output You should see output similar to the following:
+
+``` txt
+Executing command: /path/to/workspace/target/release/ncbi -d /path/to/workspace/downloads gen -g archaea
+NCBI binary output: [download output here]
+
+Executing command: /path/to/workspace/target/release/ncbi -d /path/to/workspace/downloads tax
+NCBI binary output: [download output here]
+```
+
+The ncbi binary is used to download resources from the NCBI website. Here is the help manual for the ncbi binary:
+
+``` sh
+./target/release/ncbi -h
+ncbi download resource
+
+Usage: ncbi [OPTIONS] <COMMAND>
+
+Commands:
+  taxonomy  Download taxonomy files from NCBI (alias: tax)
+  genomes   Download genomes data from NCBI (alias: gen)
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -d, --download-dir <DOWNLOAD_DIR>  Directory to store downloaded files [default: lib]
+  -n, --num-threads <NUM_THREADS>    Number of threads to use for downloading [default: 20]
+  -h, --help                         Print help (see more with '--help')
+  -V, --version                      Print version
+```
 
 ## kun_peng tool
 
@@ -368,3 +424,31 @@ Sample Report Output Formats:
 4.  A rank code, indicating (U)nclassified, (R)oot, (D)omain, (K)ingdom, (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies. Taxa that are not at any of these 10 ranks have a rank code that is formed by using the rank code of the closest ancestor rank with a number indicating the distance from that rank. E.g., “G2” is a rank code indicating a taxon is between genus and species and the grandparent taxon is at the genus rank.
 5.  NCBI taxonomic ID number
 6.  Indented scientific name
+
+## Benchmark
+We compare results from Kun_peng with Kraken2 using the same database [here](https://genome-idx.s3.amazonaws.com/kraken/k2_standard_20240605.tar.gz). Two datasets were used: 1. PacBio CCS long metagenomic reads from human gut sample (1); 2. Illumina shotgun metagenomic reads from oxygen minimum zone sample (depth 302m) in the ocean (NCBI project number PRJNA1124864), which is a less studied system. The following scripts can be used to reproduce the plots below. 
+```bash
+### use scripts from KrakenTools
+git clone https://github.com/jenniferlu717/KrakenTools.git
+python ./KrakenTools/kreport2krona.py -r output_1_report.txt -o output_1_report.krona
+### install Krona software first: https://github.com/marbl/Krona
+ktImportText output_1_report.krona -o output_1_report.krona.html
+```
+Results for the human gut sample from Kun_peng:
+<img src="./benchmark/Kun_peng_Min17.png" align="center"/>
+Results for the human gut sample from Kraken2:
+<img src="./benchmark/Kraken2_Min17.png" align="center"/>
+
+
+Results for the OMZ sample from Kun_peng (classfied reads only):
+<img src="./benchmark/S138_Kun_peng_classified.png" align="center"/>
+Results for the OMZ sample from Kraken2 (classfied reads only):
+<img src="./benchmark/S138_kraken2_classified.png" align="center"/>
+
+Interactive results can be found in the benchmark folder (html files can be viewed in a browser). 
+
+
+## References
+
+1. Karst, S.M., Ziels, R.M., Kirkegaard, R.H. et al. High-accuracy long-read amplicon sequences using unique molecular identifiers with Nanopore or PacBio sequencing. Nat Methods 18, 165–169 (2021). https://doi.org/10.1038/s41592-020-01041-y
+
