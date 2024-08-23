@@ -1,9 +1,9 @@
 [package]
 name = "kraken2_rs"
-version = "0.6.12"
+version = "0.6.13"
 edition = "2021"
 authors = ["jianshuzhao@yahoo.com"]
-description = "An ultra-fast, low-memory footprint and accurate taxonomy classifier for all"
+description = "An ultra-fast, low-memory footprint and accurate taxonomy classifier in Rust"
 license = "MIT"
 repository = "https://github.com/jianshu93/kraken2-rust"
 keywords = ["bioinformatics", "metagenomics", "microbiome", "classification"]
