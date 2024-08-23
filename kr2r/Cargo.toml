@@ -1,6 +1,6 @@
 [package]
 name = "kraken2_rs"
-version = "0.6.11"
+version = "0.6.12"
 edition = "2021"
 authors = ["jianshuzhao@yahoo.com"]
 description = "An ultra-fast, low-memory footprint and accurate taxonomy classifier for all"
