@@ -1,3 +1,9 @@
+# Note
+The original author refused to merge my pull request to fix error for compiling on MacOS (reqwest crate) and benchmark with original kraken2 using real-world datasets (https://github.com/eric9n/Kun-peng/pull/28). I found that this implementation is less accurate than original Kraken2 for many banchmarks. Therefore, I added benchmark results using real-world datasets. Also, I cleaned many non-English annotation/documentation. I also use the improved HyperLogLog estimator invented in Ertl 2017 paper (https://arxiv.org/abs/1702.01284) to determine hash table size. 
+
+Credit to original author: https://github.com/eric9n/Kun-peng. Below are updated README with benchmark results in the end. 
+
+
 # Kun-peng <img src="./kr2r//docs/KunPeng.png" align="right" width="140"/>
 
 [![](https://img.shields.io/badge/doi-waiting-yellow.svg)]() [![](https://img.shields.io/badge/release%20version-0.6.10-green.svg)](https://github.com/eric9n/Kun-peng/releases)

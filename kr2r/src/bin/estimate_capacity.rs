@@ -1,8 +1,8 @@
 use clap::{error::ErrorKind, Error, Parser};
 use hyperloglogplus::{HyperLogLog, HyperLogLogPlus};
-use kun_peng::args::KLMTArgs;
-use kun_peng::utils::{find_files, format_bytes, open_file};
-use kun_peng::KBuildHasher;
+use kraken2_rs::args::KLMTArgs;
+use kraken2_rs::utils::{find_files, format_bytes, open_file};
+use kraken2_rs::KBuildHasher;
 
 use seqkmer::{read_parallel, BufferFastaReader};
 use serde_json;
@@ -22,7 +22,6 @@ pub struct Args {
     #[arg(long, default_value = "lib")]
     pub database: PathBuf,
 
-    /// 包含原始配置
     #[clap(flatten)]
     pub klmt: KLMTArgs,
 
@@ -64,11 +63,11 @@ fn process_sequence<P: AsRef<Path>>(
     // hllp: &mut HyperLogLogPlus<u64, KBuildHasher>,
     args: Args,
 ) -> HyperLogLogPlus<u64, KBuildHasher> {
-    // 构建预期的 JSON 文件路径
+
     let json_path = build_output_path(fna_file, &format!("hllp_{}.json", args.n));
-    // 检查是否存在 JSON 文件
+
     if args.cache && Path::new(&json_path).exists() {
-        // 如果存在，从文件读取并反序列化
+
         let mut file = open_file(json_path).unwrap();
         let mut serialized_hllp = String::new();
         file.read_to_string(&mut serialized_hllp).unwrap();
@@ -116,11 +115,11 @@ fn process_sequence<P: AsRef<Path>>(
     )
     .expect("read parallel error");
 
-    // 序列化 hllp 对象并将其写入文件
+
     let serialized_hllp = serde_json::to_string(&hllp).unwrap();
 
     if let Ok(mut file) = File::create(&json_path) {
-        // 尝试写入数据
+
         if let Err(e) = file.write_all(serialized_hllp.as_bytes()) {
             eprintln!("Failed to write to file: {}", e);
         }

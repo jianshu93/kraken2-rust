@@ -1,11 +1,11 @@
 use clap::Parser;
-use kun_peng::classify::process_hitgroup;
-use kun_peng::compact_hash::{CHTable, Compact, HashConfig, Row};
-use kun_peng::readcounts::{TaxonCounters, TaxonCountersDash};
-use kun_peng::report::report_kraken_style;
-use kun_peng::taxonomy::Taxonomy;
-use kun_peng::utils::{create_sample_file, find_and_sort_files, get_lastest_file_index};
-use kun_peng::{HitGroup, IndexOptions};
+use kraken2_rs::classify::process_hitgroup;
+use kraken2_rs::compact_hash::{CHTable, Compact, HashConfig, Row};
+use kraken2_rs::readcounts::{TaxonCounters, TaxonCountersDash};
+use kraken2_rs::report::report_kraken_style;
+use kraken2_rs::taxonomy::Taxonomy;
+use kraken2_rs::utils::{create_sample_file, find_and_sort_files, get_lastest_file_index};
+use kraken2_rs::{HitGroup, IndexOptions};
 use seqkmer::{read_parallel, Base, FastxReader, Meros, MinimizerIterator, OptionPair, Reader};
 use std::collections::HashMap;
 use std::fs::File;
@@ -209,8 +209,8 @@ where
 
     let mut sample_taxon_counts: HashMap<
         u64,
-        kun_peng::readcounts::ReadCounts<
-            hyperloglogplus::HyperLogLogPlus<u64, kun_peng::KBuildHasher>,
+        kraken2_rs::readcounts::ReadCounts<
+            hyperloglogplus::HyperLogLogPlus<u64, kraken2_rs::KBuildHasher>,
         >,
     > = HashMap::new();
     cur_taxon_counts.iter().for_each(|entry| {
@@ -315,7 +315,7 @@ fn process_files(
     };
 
     if args.paired_end_processing && !args.single_file_pairs {
-        // 处理成对的文件
+
         let files = args.input_files.chunks(2).collect();
         process_funcs(files)?;
     } else {
@@ -331,7 +331,7 @@ pub fn run(args: Args) -> Result<()> {
     let idx_opts = IndexOptions::read_index_options(options_filename)?;
 
     if args.paired_end_processing && !args.single_file_pairs && args.input_files.len() % 2 != 0 {
-        // 验证文件列表是否为偶数个
+
         return Err(Error::new(
             ErrorKind::InvalidInput,
             "Paired-end processing requires an even number of input files.",

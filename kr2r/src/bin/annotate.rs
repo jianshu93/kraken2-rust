@@ -1,6 +1,6 @@
 use clap::Parser;
-use kun_peng::compact_hash::{read_next_page, Compact, HashConfig, Page, Row, Slot};
-use kun_peng::utils::{find_and_sort_files, open_file};
+use kraken2_rs::compact_hash::{read_next_page, Compact, HashConfig, Page, Row, Slot};
+use kraken2_rs::utils::{find_and_sort_files, open_file};
 use seqkmer::buffer_read_parallel;
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
@@ -9,7 +9,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::time::Instant;
 
-// 定义每批次处理的 Slot 数量
 pub const BUFFER_SIZE: usize = 48 * 1024 * 1024;
 
 /// Command line arguments for the splitr program.
@@ -99,7 +98,6 @@ fn write_to_file(
     writers: &mut HashMap<(u64, u32), BufWriter<File>>,
     chunk_dir: &PathBuf,
 ) -> io::Result<()> {
-    // 检查是否已经有该文件的 writer，没有则创建一个新的
     let writer = writers.entry((file_index, seq_id_mod)).or_insert_with(|| {
         let file_name = format!("sample_file_{}_{}.bin", file_index, seq_id_mod);
         let file_path = chunk_dir.join(file_name);
@@ -128,7 +126,7 @@ fn clean_up_writers(
 
     for key in keys_to_remove {
         if let Some(mut writer) = writers.remove(&key) {
-            writer.flush()?; // 刷新并清理
+            writer.flush()?; 
         }
     }
 
@@ -191,11 +189,11 @@ where
             while let Some(data) = result.next() {
                 let res = data.unwrap();
                 let mut file_keys: Vec<_> = res.keys().cloned().collect();
-                file_keys.sort_unstable(); // 对 (file_index, seq_id_mod) 进行排序
+                file_keys.sort_unstable(); // 
 
                 for (file_index, seq_id_mod) in file_keys {
                     if let Some(bytes) = res.get(&(file_index, seq_id_mod)) {
-                        // 如果当前处理的 file_index 改变了，清理非当前的 writers
+
                         if current_file_index != Some(file_index) {
                             clean_up_writers(&mut writers, file_index).expect("clean writer");
                             current_file_index = Some(file_index);
@@ -210,7 +208,6 @@ where
     )
     .expect("failed");
 
-    // 最终批次处理完成后，刷新所有的 writer
     for writer in writers.values_mut() {
         writer.flush()?;
     }
@@ -235,9 +232,9 @@ fn process_chunk_file<P: AsRef<Path>>(
     let config = HashConfig::from_hash_header(&args.database.join("hash_config.k2d"))?;
 
     read_next_page(large_page, hash_files, page_index, config)?;
-    // 计算持续时间
+
     let duration = start.elapsed();
-    // 打印运行时间
+
     println!("load table took: {:?}", duration);
     process_batch(
         &mut reader,
@@ -257,7 +254,7 @@ pub fn run(args: Args) -> Result<()> {
     let chunk_files = find_and_sort_files(&args.chunk_dir, "sample", ".k2", true)?;
     let hash_files = find_and_sort_files(&args.database, "hash", ".k2d", true)?;
 
-    // 开始计时
+
     let start = Instant::now();
     println!("annotate start...");
     let config = HashConfig::from_hash_header(&args.database.join("hash_config.k2d"))?;
@@ -267,9 +264,8 @@ pub fn run(args: Args) -> Result<()> {
         let _ = std::fs::remove_file(chunk_file);
     }
 
-    // 计算持续时间
     let duration = start.elapsed();
-    // 打印运行时间
+
     println!("annotate took: {:?}", duration);
 
     Ok(())

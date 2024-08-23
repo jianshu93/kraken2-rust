@@ -1,10 +1,10 @@
 use clap::Parser;
-use kun_peng::compact_hash::{HashConfig, Slot};
-use kun_peng::utils::{
+use kraken2_rs::compact_hash::{HashConfig, Slot};
+use kraken2_rs::utils::{
     create_partition_files, create_partition_writers, create_sample_file, get_file_limit,
     get_lastest_file_index, set_fd_limit,
 };
-use kun_peng::IndexOptions;
+use kraken2_rs::IndexOptions;
 use seqkmer::{read_parallel, FastxReader, Meros, MinimizerIterator, OptionPair, Reader};
 use std::fs;
 use std::io::{BufWriter, Write};

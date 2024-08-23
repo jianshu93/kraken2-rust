@@ -1,6 +1,6 @@
 use clap::Parser;
-use kun_peng::args::parse_size;
-use kun_peng::compact_hash::HashConfig;
+use kraken2_rs::args::parse_size;
+use kraken2_rs::compact_hash::HashConfig;
 // use memmap2::MmapOptions;
 use std::fs::{self, create_dir_all, File, OpenOptions};
 use std::io::BufWriter;
@@ -17,7 +17,6 @@ fn mmap_read_write<P: AsRef<Path>, Q: AsRef<Path>>(
     offset: u64,
     length: usize,
 ) -> IOResult<()> {
-    // 打开目标文件，准备写入数据
     let mut dest_file = BufWriter::new(File::create(dest_path)?);
     dest_file
         .write_all(&partition.to_le_bytes())
@@ -26,16 +25,13 @@ fn mmap_read_write<P: AsRef<Path>, Q: AsRef<Path>>(
         .write_all(&cap.to_le_bytes())
         .expect("Failed to write capacity");
 
-    // 打开源文件，并创建一个缓冲读取器
     let mut file = OpenOptions::new().read(true).open(&source_path)?;
     file.seek(io::SeekFrom::Start(offset))?;
     let mut reader = BufReader::new(file);
 
-    // 创建一个缓冲区，用于存储读取的数据
     let mut buffer = vec![0; length];
     reader.read_exact(&mut buffer)?;
 
-    // 将读取的数据写入目标文件
     dest_file.write_all(&buffer)?;
 
     Ok(())
@@ -44,7 +40,7 @@ fn mmap_read_write<P: AsRef<Path>, Q: AsRef<Path>>(
 #[derive(Parser, Debug, Clone)]
 #[clap(
     version,
-    about = "Convert Kraken2 database files to kun_peng-peng database format for efficient processing and analysis."
+    about = "Convert Kraken2 database files to kraken2_rs-peng database format for efficient processing and analysis."
 )]
 pub struct Args {
     /// The database directory for the Kraken 2 index. contains index files(hash.k2d opts.k2d taxo.k2d)
@@ -70,7 +66,7 @@ pub fn run(args: Args) -> IOResult<()> {
     hash_config.hash_capacity = args.hash_capacity;
 
     println!("hashshard start...");
-    // 开始计时
+
     let start = Instant::now();
 
     let file_len = hash_config.capacity * 4 + 32;
@@ -98,10 +94,8 @@ pub fn run(args: Args) -> IOResult<()> {
         mmap_read_write(&index_filename, chunk_file, i, cap, offset, length)?
     }
 
-    // 计算持续时间
     let duration = start.elapsed();
 
-    // 打印运行时间
     println!("hashshard took: {:?}", duration);
 
     let source_taxo_file = &args.database.join("taxo.k2d");

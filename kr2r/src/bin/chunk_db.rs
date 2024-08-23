@@ -1,14 +1,13 @@
-// 使用时需要引用模块路径
 use clap::Parser;
-use kun_peng::args::{parse_size, Build};
-use kun_peng::compact_hash::HashConfig;
-use kun_peng::db::{convert_fna_to_k2_format, get_bits_for_taxid};
-use kun_peng::taxonomy::Taxonomy;
-use kun_peng::utils::{
+use kraken2_rs::args::{parse_size, Build};
+use kraken2_rs::compact_hash::HashConfig;
+use kraken2_rs::db::{convert_fna_to_k2_format, get_bits_for_taxid};
+use kraken2_rs::taxonomy::Taxonomy;
+use kraken2_rs::utils::{
     create_partition_files, create_partition_writers, find_files, get_file_limit,
     read_id_to_taxon_map, set_fd_limit,
 };
-use kun_peng::IndexOptions;
+use kraken2_rs::IndexOptions;
 use std::time::Instant;
 
 #[derive(Parser, Debug, Clone)]
@@ -17,7 +16,6 @@ pub struct Args {
     #[clap(long, value_parser = parse_size, default_value = "1G", help = "Specifies the hash file capacity.\nAcceptable formats include numeric values followed by 'K', 'M', or 'G' (e.g., '1.5G', '250M', '1024K').\nNote: The specified capacity affects the index size, with a factor of 4 applied.\nFor example, specifying '1G' results in an index size of '4G'.\nDefault: 1G (capacity 1G = file size 4G)")]
     pub hash_capacity: usize,
 
-    /// 包含原始配置
     #[clap(flatten)]
     pub build: Build,
 }
@@ -43,7 +41,7 @@ pub fn run(args: Args, required_capacity: usize) -> Result<(), Box<dyn std::erro
     let partition = (capacity + args.hash_capacity - 1) / args.hash_capacity;
     let hash_config = HashConfig::new(1, capacity, value_bits, 0, partition, args.hash_capacity);
 
-    // 开始计时
+
     let start = Instant::now();
 
     let chunk_size = args.hash_capacity as usize;
@@ -75,9 +73,9 @@ pub fn run(args: Args, required_capacity: usize) -> Result<(), Box<dyn std::erro
 
     let hash_filename = k2d_dir.join("hash_config.k2d");
     hash_config.write_to_file(&hash_filename)?;
-    // 计算持续时间
+
     let duration = start.elapsed();
-    // 打印运行时间
+
     println!("chunk db took: {:?}", duration);
 
     let options_filename = k2d_dir.join("opts.k2d");
